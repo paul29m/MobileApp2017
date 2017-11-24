@@ -1,4 +1,4 @@
-# Wanted Card App
+# Wanted Cars App
 
 # What is "Wanted Cars"?
 	The app is designed for car lovers. It has 2 main user roles: 
