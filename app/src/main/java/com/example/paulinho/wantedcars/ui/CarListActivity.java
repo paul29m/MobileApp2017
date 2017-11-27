@@ -23,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.paulinho.wantedcars.R;
@@ -52,51 +53,37 @@ public class CarListActivity extends AppCompatActivity {
         list = new ArrayList<>();
         adapter = new CarListAdapter(this, R.layout.car_items, list);
         gridView.setAdapter(adapter);
-
-        // get all data from sqlite
-        Cursor cursor =MainActivity.sqLiteHelper.getData("SELECT * FROM CARS");
-        list.clear();
-        while (cursor.moveToNext()) {
-            int id = cursor.getInt(0);
-            String name = cursor.getString(1);
-            String year = cursor.getString(2);
-            String description =cursor.getString(3);
-            String category= cursor.getString(4);
-            byte[] image = cursor.getBlob(5);
-
-
-            list.add(new Car(id, name, year, description, category,image ));
-        }
-        adapter.notifyDataSetChanged();
+        updateCarList();
 
         gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
 
-                CharSequence[] items = {"Update", "Delete"};
+                CharSequence[] items = {"Show details","Update", "Delete"};
                 AlertDialog.Builder dialog = new AlertDialog.Builder(CarListActivity.this);
 
                 dialog.setTitle("Choose an action");
                 dialog.setItems(items, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int item) {
+                        //get id from database
+                        Cursor c = com.example.paulinho.wantedcars.ui.MainActivity.sqLiteHelper.getData("SELECT id FROM CARS");
+                        ArrayList<Integer> arrID = new ArrayList<Integer>();
+                        while (c.moveToNext()){
+                            arrID.add(c.getInt(0));
+                        }
                         if (item == 0) {
+                            //details
+                            showDialogDetails(CarListActivity.this, arrID.get(position));
+                        }
+                        else
+                            if (item == 1) {
                             // update
-                            Cursor c = com.example.paulinho.wantedcars.ui.MainActivity.sqLiteHelper.getData("SELECT id FROM CARS");
-                            ArrayList<Integer> arrID = new ArrayList<Integer>();
-                            while (c.moveToNext()){
-                                arrID.add(c.getInt(0));
-                            }
-                            // show dialog update at here
                             showDialogUpdate(CarListActivity.this, arrID.get(position));
 
-                        } else {
+                        } else
+                            {
                             // delete
-                            Cursor c = com.example.paulinho.wantedcars.ui.MainActivity.sqLiteHelper.getData("SELECT id FROM CARS");
-                            ArrayList<Integer> arrID = new ArrayList<Integer>();
-                            while (c.moveToNext()){
-                                arrID.add(c.getInt(0));
-                            }
                             showDialogDelete(arrID.get(position));
                         }
                     }
@@ -113,19 +100,22 @@ public class CarListActivity extends AppCompatActivity {
         final Dialog dialog = new Dialog(activity);
         dialog.setContentView(R.layout.update_car_activity);
         dialog.setTitle("Update");
-
+        Car thiscar = null;
+        for (Car car : list)
+            if (car.getId() == position)
+                thiscar=car;
         imageViewCar = (ImageView) dialog.findViewById(R.id.imageViewCar);
-        byte[] carImage = list.get(position-1).getImage();
+        byte[] carImage = thiscar.getImage();
         Bitmap bitmap = BitmapFactory.decodeByteArray(carImage, 0, carImage.length);
         imageViewCar.setImageBitmap(bitmap);
         final EditText edtName = (EditText) dialog.findViewById(R.id.edtName);
-        edtName.setText(list.get(position-1).getName());
+        edtName.setText(thiscar.getName());
         final EditText edtYear = (EditText) dialog.findViewById(R.id.edtYear);
-        edtYear.setText(list.get(position-1).getYear());
+        edtYear.setText(thiscar.getYear());
         final EditText edtDesc = (EditText) dialog.findViewById(R.id.edtDescr);
-        edtDesc.setText(list.get(position-1).getDescription());
+        edtDesc.setText(thiscar.getDescription());
         final EditText edtCat = (EditText) dialog.findViewById(R.id.edtCategory);
-        edtCat.setText(list.get(position-1).getCategory());
+        edtCat.setText(thiscar.getCategory());
         Button btnUpdate = (Button) dialog.findViewById(R.id.btnUpdate);
         // set width for dialog
         int width = (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.95);
@@ -169,6 +159,49 @@ public class CarListActivity extends AppCompatActivity {
             }
         });
     }
+    private void showDialogDetails(Activity activity ,final int position){final Dialog dialog = new Dialog(activity);
+        dialog.setContentView(R.layout.show_car_activity);
+        dialog.setTitle("Update");
+        Car thiscar = null;
+        for (Car car : list)
+            if (car.getId() == position)
+                thiscar=car;
+        imageViewCar = (ImageView) dialog.findViewById(R.id.imageViewCar);
+        byte[] carImage = thiscar.getImage();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(carImage, 0, carImage.length);
+        imageViewCar.setImageBitmap(bitmap);
+        final TextView edtName = (TextView) dialog.findViewById(R.id.edtName);
+        edtName.setText("Vehicle: " + thiscar.getName());
+        final TextView edtYear = (TextView) dialog.findViewById(R.id.edtYear);
+        edtYear.setText("Year: "+ thiscar.getYear());
+        final TextView edtDesc = (TextView) dialog.findViewById(R.id.edtDescr);
+        edtDesc.setText("INFO: "+thiscar.getDescription());
+        final TextView edtCat = (TextView) dialog.findViewById(R.id.edtCategory);
+        edtCat.setText("Category: "+thiscar.getCategory());
+        Button btnAddList = (Button) dialog.findViewById(R.id.btnAddList);
+        Button btnShare = (Button) dialog.findViewById(R.id.btnShare);
+        // set width for dialog
+        int width = (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.95);
+        // set height for dialog
+        int height = (int) (activity.getResources().getDisplayMetrics().heightPixels * 0.8);
+        dialog.getWindow().setLayout(width, height);
+        dialog.show();
+
+        btnAddList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            //TODO
+            }
+            });
+
+        final Car finalThiscar = thiscar;
+        btnShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendEmail(finalThiscar);
+            }
+        });
+    }
 
     private void showDialogDelete(final int idCar){
         final AlertDialog.Builder dialogDelete = new AlertDialog.Builder(CarListActivity.this);
@@ -196,21 +229,7 @@ public class CarListActivity extends AppCompatActivity {
         dialogDelete.show();
     }
 
-    private void updateCarList(){
-        // get all data from sqlite
-        Cursor cursor = MainActivity.sqLiteHelper.getData("SELECT * FROM CARS");
-        list.clear();
-        while (cursor.moveToNext()) {
-            int id = cursor.getInt(0);
-            String name = cursor.getString(1);
-            String year = cursor.getString(2);
-            String description =cursor.getString(3);
-            String category= cursor.getString(4);
-            byte[] image = cursor.getBlob(5);
-            list.add(new Car(id,name, year, description,category, image));
-        }
-        adapter.notifyDataSetChanged();
-    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -246,4 +265,36 @@ public class CarListActivity extends AppCompatActivity {
 
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    private void updateCarList(){
+        // get all data from sqlite
+        Cursor cursor = MainActivity.sqLiteHelper.getData("SELECT * FROM CARS");
+        list.clear();
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(0);
+            String name = cursor.getString(1);
+            String year = cursor.getString(2);
+            String description =cursor.getString(3);
+            String category= cursor.getString(4);
+            byte[] image = cursor.getBlob(5);
+            list.add(new Car(id,name, year, description,category, image));
+        }
+        adapter.notifyDataSetChanged();
+    }
+
+    private void sendEmail(Car car){
+
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.setType("text/plain");
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Found this awesome car"+car.getName());
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "I found it on Wanted Cars app:\n "+car.toString());
+        try {
+            startActivity(Intent.createChooser(emailIntent, "Send mail..."));
+            finish();
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(CarListActivity.this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

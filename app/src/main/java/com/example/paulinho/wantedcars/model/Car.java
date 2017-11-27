@@ -68,4 +68,12 @@ public class Car {
         this.category = category;
     }
 
+    @Override
+    public String toString() {
+        return "Car:" +
+                "Vehicle: " + name + '\n' +
+                "year: " + year + '\n' +
+                "description: " + description + '\n' +
+                "category: " + category;
+    }
 }
