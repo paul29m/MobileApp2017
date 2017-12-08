@@ -1,10 +1,14 @@
 package com.example.paulinho.wantedcars.ui;
+
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -22,6 +27,7 @@ import com.example.paulinho.wantedcars.util.SQLiteHelper;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Calendar;
 
 /**
  * Created by paulinho on 11/24/2017.
@@ -29,10 +35,11 @@ import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
 
-    EditText edtName, edtYear, edtDesc, edtCat;
-    Button btnChoose, btnAdd, btnList;
-    ImageView imageView;
+    private EditText edtName, edtYear, edtDesc, edtCat;
+    private Button btnChoose, btnAdd, btnList, btnSelect;
+    private ImageView imageView;
 
+    private DatePickerDialog.OnDateSetListener mDateSetListener;
     final int REQUEST_CODE_GALLERY = 999;
 
     public static SQLiteHelper sqLiteHelper;
@@ -91,6 +98,31 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        btnSelect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Calendar cal = Calendar.getInstance();
+                int year = cal.get(Calendar.YEAR);
+                int month = cal.get(Calendar.MONTH);
+                int day = cal.get(Calendar.DAY_OF_MONTH);
+
+                DatePickerDialog dialog = new DatePickerDialog(
+                        MainActivity.this,
+                        android.R.style.Theme_Holo_Light_Dialog_MinWidth,
+                        mDateSetListener,
+                        year,month,day);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialog.show();
+
+            }
+        });
+        mDateSetListener = new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+                String date =  year+"";
+                edtYear.setText(date);
+            }
+        };
     }
 
     public static byte[] imageViewToByte(ImageView image) {
@@ -147,6 +179,7 @@ public class MainActivity extends AppCompatActivity {
         btnChoose = (Button) findViewById(R.id.btnChoose);
         btnAdd = (Button) findViewById(R.id.btnAdd);
         btnList = (Button) findViewById(R.id.btnList);
+        btnSelect =(Button) findViewById(R.id.btnSelect);
         imageView = (ImageView) findViewById(R.id.imageView);
         imageView.setImageResource(R.drawable.basic_car);
     }
