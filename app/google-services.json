@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "826806513059",
+    "project_id": "wantedcars-1995"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:826806513059:android:e3099d0749cb4817",
+        "android_client_info": {
+          "package_name": "com.example.paulinho.wantedcars"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "826806513059-fj87cdsadaikvqo8o4oshr4odihd8jmf.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "826806513059-8j3n0m2uok1i7hjdh8mndo2igt8t6h6j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.paulinho.wantedcars",
+            "certificate_hash": "7642f148eb431c626c8dead7bfea499f352ee1d9"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTGyz_4j5GRbptmqE785O8zeljkNyAkQE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
