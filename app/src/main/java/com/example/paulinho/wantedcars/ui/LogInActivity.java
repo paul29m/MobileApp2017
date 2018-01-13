@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.paulinho.wantedcars.R;
+import com.example.paulinho.wantedcars.util.SQLiteHelper;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -26,6 +27,7 @@ import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 
+
 /**
  * Created by paulinho on 1/7/2018.
  */
@@ -33,12 +35,14 @@ import com.google.android.gms.common.api.Status;
 public class LogInActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = LogInActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 420;
+    public static SQLiteHelper sqLiteHelper;
 
     private GoogleApiClient mGoogleApiClient;
     private ProgressDialog mProgressDialog;
+    GoogleSignInAccount acct;
 
     private SignInButton btnSignIn;
-    private Button btnSignOut;
+    private Button btnSignOut, btnList, btnAdd;
     private LinearLayout llProfileLayout;
     private ImageView imgProfilePic;
     private TextView txtName, txtEmail;
@@ -54,11 +58,17 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
     private void initializeControls(){
         btnSignIn = (SignInButton) findViewById(R.id.btn_sign_in);
         btnSignOut = (Button) findViewById(R.id.btn_sign_out);
+        btnList = (Button) findViewById(R.id.btn_list);
+        btnAdd = (Button) findViewById(R.id.btn_addA);
         llProfileLayout = (LinearLayout) findViewById(R.id.llProfile);
         imgProfilePic = (ImageView) findViewById(R.id.imgProfilePic);
         txtName = (TextView) findViewById(R.id.txtName);
         txtEmail = (TextView) findViewById(R.id.txtEmail);
-
+        sqLiteHelper = new SQLiteHelper(this, "CARS.sqlite", null, 1);
+        //sqLiteHelper.queryData("Drop Table CARS");
+        sqLiteHelper.queryData("CREATE TABLE IF NOT EXISTS CARS(Id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR, year VARCHAR, description  VARCHAR, category VARCHAR, image BLOB)");
+        btnList.setOnClickListener(this);
+        btnAdd.setOnClickListener(this);
         btnSignIn.setOnClickListener(this);
         btnSignOut.setOnClickListener(this);
     }
@@ -99,11 +109,11 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
-            GoogleSignInAccount acct = result.getSignInAccount();
+            acct = result.getSignInAccount();
 
             //Fetch values
             String personName = acct.getDisplayName();
-            String personPhotoUrl = acct.getPhotoUrl().toString();
+            String personPhotoUrl =  acct.getPhotoUrl().toString();
             String email = acct.getEmail();
             String familyName = acct.getFamilyName();
 
@@ -140,7 +150,25 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
             case R.id.btn_sign_out:
                 signOut();
                 break;
+            case  R.id.btn_list:
+                goToList();
+                break;
+            case  R.id.btn_addA:
+                goToAdd();
+                break;
         }
+    }
+
+    private void goToAdd() {
+        Intent intent = new Intent(LogInActivity.this, MainActivity.class);
+        startActivity(intent);
+    }
+
+
+    private void goToList() {
+        Intent intent = new Intent(LogInActivity.this, CarListActivity.class);
+        intent.putExtra("SESSION_USER", acct.getEmail());
+        startActivity(intent);
     }
 
     @Override
@@ -207,11 +235,17 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
         if (isSignedIn) {
             btnSignIn.setVisibility(View.GONE);
             btnSignOut.setVisibility(View.VISIBLE);
+            if(txtEmail.getText().equals("m7paul29@gmail.com")){
+                btnAdd.setVisibility(View.VISIBLE);
+            }
+            btnList.setVisibility(View.VISIBLE);
             llProfileLayout.setVisibility(View.VISIBLE);
         } else {
             btnSignIn.setVisibility(View.VISIBLE);
             btnSignOut.setVisibility(View.GONE);
             llProfileLayout.setVisibility(View.GONE);
+            btnList.setVisibility(View.GONE);
+            btnAdd.setVisibility(View.GONE);
         }
     }
 }

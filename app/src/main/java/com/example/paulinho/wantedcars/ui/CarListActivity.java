@@ -42,10 +42,11 @@ public class CarListActivity extends AppCompatActivity {
     GridView gridView;
     ArrayList<Car> list;
     CarListAdapter adapter = null;
-
+    String s;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+         s = getIntent().getStringExtra("SESSION_USER");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.car_list_activity);
 
@@ -67,7 +68,7 @@ public class CarListActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int item) {
                         //get id from database
-                        Cursor c = com.example.paulinho.wantedcars.ui.MainActivity.sqLiteHelper.getData("SELECT id FROM CARS");
+                        Cursor c = com.example.paulinho.wantedcars.ui.LogInActivity.sqLiteHelper.getData("SELECT id FROM CARS");
                         ArrayList<Integer> arrID = new ArrayList<Integer>();
                         while (c.moveToNext()){
                             arrID.add(c.getInt(0));
@@ -78,13 +79,23 @@ public class CarListActivity extends AppCompatActivity {
                         }
                         else
                             if (item == 1) {
-                            // update
-                            showDialogUpdate(CarListActivity.this, arrID.get(position));
-
+                                if(s.equals("m7paul29@gmail.com")) {
+                                    // update
+                                    showDialogUpdate(CarListActivity.this, arrID.get(position));
+                                }
+                                else {
+                                    Toast.makeText(getApplicationContext(), "You are not authorized", Toast.LENGTH_SHORT).show();
+                                }
                         } else
                             {
                             // delete
-                            showDialogDelete(arrID.get(position));
+
+                                if(s.equals("m7paul29@gmail.com")) {
+                                    showDialogDelete(arrID.get(position));
+                                }
+                                else {
+                                    Toast.makeText(getApplicationContext(), "You are not authorized", Toast.LENGTH_SHORT).show();
+                                }
                         }
                     }
                 });
@@ -140,7 +151,7 @@ public class CarListActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    com.example.paulinho.wantedcars.ui.MainActivity.sqLiteHelper.updateData(
+                    com.example.paulinho.wantedcars.ui.LogInActivity.sqLiteHelper.updateData(
                             edtName.getText().toString().trim(),
                             edtYear.getText().toString().trim(),
                             edtDesc.getText().toString().trim(),
@@ -211,7 +222,7 @@ public class CarListActivity extends AppCompatActivity {
         dialogDelete.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                try {MainActivity.sqLiteHelper.deleteData(idCar);
+                try {LogInActivity.sqLiteHelper.deleteData(idCar);
                     Toast.makeText(getApplicationContext(), "Delete successfully", Toast.LENGTH_SHORT).show();
                 } catch (Exception e){
                     Log.e("error", e.getMessage());
@@ -262,13 +273,13 @@ public class CarListActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
+         s = getIntent().getStringExtra("SESSION_USER");
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     private void updateCarList(){
         // get all data from sqlite
-        Cursor cursor = MainActivity.sqLiteHelper.getData("SELECT * FROM CARS");
+        Cursor cursor = LogInActivity.sqLiteHelper.getData("SELECT * FROM CARS");
         list.clear();
         while (cursor.moveToNext()) {
             int id = cursor.getInt(0);

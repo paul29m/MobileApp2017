@@ -59,4 +59,19 @@
         android:text="Sign out"
         android:visibility="gone" />
 
+    <Button
+        android:id="@+id/btn_list"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:text="All Cars"
+        android:visibility="gone" />
+    <Button
+        android:id="@+id/btn_addA"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:text="Add cars to database"
+        android:visibility="gone" />
+
 </LinearLayout>
