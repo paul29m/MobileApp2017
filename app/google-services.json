@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "826806513059",
-    "project_id": "wantedcars-1995"
+    "firebase_url": "https://wantedcars-1995.firebaseio.com",
+    "project_id": "wantedcars-1995",
+    "storage_bucket": "wantedcars-1995.appspot.com"
   },
   "client": [
     {
@@ -12,6 +14,10 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "826806513059-ip146pjfi2ctqcv72ba7jeog6ip8t100.apps.googleusercontent.com",
+          "client_type": 3
+        },
         {
           "client_id": "826806513059-fj87cdsadaikvqo8o4oshr4odihd8jmf.apps.googleusercontent.com",
           "client_type": 3

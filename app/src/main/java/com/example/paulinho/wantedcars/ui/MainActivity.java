@@ -2,6 +2,7 @@ package com.example.paulinho.wantedcars.ui;
 
 import android.Manifest;
 import android.app.DatePickerDialog;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -13,6 +14,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -22,12 +24,14 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.paulinho.wantedcars.R;
+import com.example.paulinho.wantedcars.util.ExecutorSingleton;
 import com.example.paulinho.wantedcars.util.SQLiteHelper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Calendar;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by paulinho on 11/24/2017.
@@ -38,10 +42,10 @@ public class MainActivity extends AppCompatActivity {
     private EditText edtName, edtYear, edtDesc, edtCat;
     private Button btnChoose, btnAdd, btnList, btnSelect;
     private ImageView imageView;
-
+    private NotificationManager mNotifyMgr;
     private DatePickerDialog.OnDateSetListener mDateSetListener;
     final int REQUEST_CODE_GALLERY = 999;
-
+    private ExecutorService executor = ExecutorSingleton.executor;
     public static SQLiteHelper sqLiteHelper;
 
     @Override
@@ -49,12 +53,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        init();
+        //init();
+        executor.submit(initrunnable);
 
         sqLiteHelper = new SQLiteHelper(this, "CARS.sqlite", null, 1);
 
         //sqLiteHelper.queryData("Drop Table CARS");
         sqLiteHelper.queryData("CREATE TABLE IF NOT EXISTS CARS(Id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR, year VARCHAR, description  VARCHAR, category VARCHAR, image BLOB)");
+
+        mNotifyMgr = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
 
         btnChoose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
                             edtCat.getText().toString().trim(),
                             imageViewToByte(imageView)
                     );
-                    Toast.makeText(getApplicationContext(), "Car added to database!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(), "Car added to database!", Toast.LENGTH_SHORT).show();
+                    showNotification(view,edtName.getText().toString());
                     edtName.setText("");
                     edtYear.setText("");
                     edtDesc.setText("");
@@ -124,6 +132,17 @@ public class MainActivity extends AppCompatActivity {
             }
         };
     }
+    private void showNotification(View v,String name){
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this);
+        mBuilder.setSmallIcon(R.drawable.ic_launcher_background);
+        mBuilder.setContentTitle("Car aded to database");
+        mBuilder.setContentText("Car name: "+name);
+        int mNotificationId = 001;
+        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+    }
+
+
+
 
     public static byte[] imageViewToByte(ImageView image) {
         Bitmap bitmap = ((BitmapDrawable)image.getDrawable()).getBitmap();
@@ -170,6 +189,22 @@ public class MainActivity extends AppCompatActivity {
 
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    Runnable initrunnable = new Runnable() {
+        @Override
+        public void run() {
+            edtName = (EditText) findViewById(R.id.edtName);
+            edtYear = (EditText) findViewById(R.id.edtYear);
+            edtCat = (EditText) findViewById(R.id.edtCat);
+            edtDesc =(EditText) findViewById(R.id.edtDesc);
+            btnChoose = (Button) findViewById(R.id.btnChoose);
+            btnAdd = (Button) findViewById(R.id.btnAdd);
+            btnList = (Button) findViewById(R.id.btnList);
+            btnSelect =(Button) findViewById(R.id.btnSelect);
+            imageView = (ImageView) findViewById(R.id.imageView);
+            imageView.setImageResource(R.drawable.basic_car);
+        }
+    };
 
     private void init(){
         edtName = (EditText) findViewById(R.id.edtName);

@@ -28,33 +28,17 @@ import android.widget.Toast;
 
 import com.example.paulinho.wantedcars.R;
 import com.example.paulinho.wantedcars.model.Car;
-import com.example.paulinho.wantedcars.model.UserCar;
 import com.example.paulinho.wantedcars.util.CarListAdapter;
-import com.example.paulinho.wantedcars.util.ExecutorSingleton;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 /**
  * Created by paulinho on 11/24/2017.
  */
 
-public class CarListActivity extends AppCompatActivity {
-
-    private ExecutorService executor = ExecutorSingleton.executor;
-    private FirebaseAuth mAuth;
-    private DatabaseReference carsDBreference;
-    private ValueEventListener vel;
+public class YourListActivity extends AppCompatActivity {
 
     GridView gridView;
     ArrayList<Car> list;
@@ -66,44 +50,40 @@ public class CarListActivity extends AppCompatActivity {
          s = getIntent().getStringExtra("SESSION_USER");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.car_list_activity);
-        mAuth = FirebaseAuth.getInstance();
 
         gridView = (GridView) findViewById(R.id.gridView);
         list = new ArrayList<>();
         adapter = new CarListAdapter(this, R.layout.car_items, list);
         gridView.setAdapter(adapter);
-        //updateCarList();
-        executor.submit(updateRunnableCarList);
+        updateCarList();
+
         gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
 
-                CharSequence[] items = {"Show details","Update", "Delete"};
-                AlertDialog.Builder dialog = new AlertDialog.Builder(CarListActivity.this);
+                CharSequence[] items = {"Show details", "Delete"};
+                AlertDialog.Builder dialog = new AlertDialog.Builder(YourListActivity.this);
 
                 dialog.setTitle("Choose an action");
                 dialog.setItems(items, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int item) {
                         //get id from database
-                        Cursor c = com.example.paulinho.wantedcars.ui.LogInActivity.sqLiteHelper.getData("SELECT id FROM CARS");
+                        Cursor c = LogInActivity.sqLiteHelper.getData("SELECT id FROM CARS");
                         ArrayList<Integer> arrID = new ArrayList<Integer>();
                         while (c.moveToNext()){
                             arrID.add(c.getInt(0));
                         }
                         if (item == 0) {
                             //details
-                            showDialogDetails(CarListActivity.this, arrID.get(position));
+                            showDialogDetails(YourListActivity.this, arrID.get(position));
                         }
                         else
                             if (item == 1) {
-                                if(s.equals("m7paul29@gmail.com")) {
+
                                     // update
-                                    showDialogUpdate(CarListActivity.this, arrID.get(position));
-                                }
-                                else {
-                                    Toast.makeText(getApplicationContext(), "You are not authorized", Toast.LENGTH_SHORT).show();
-                                }
+                                    showDialogUpdate(YourListActivity.this, arrID.get(position));
+
                         } else
                             {
                             // delete
@@ -158,7 +138,7 @@ public class CarListActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // request photo library
                 ActivityCompat.requestPermissions(
-                        CarListActivity.this,
+                        YourListActivity.this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         888
                 );
@@ -169,12 +149,12 @@ public class CarListActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    com.example.paulinho.wantedcars.ui.LogInActivity.sqLiteHelper.updateData(
+                    LogInActivity.sqLiteHelper.updateData(
                             edtName.getText().toString().trim(),
                             edtYear.getText().toString().trim(),
                             edtDesc.getText().toString().trim(),
                             edtCat.getText().toString().trim(),
-                            com.example.paulinho.wantedcars.ui.MainActivity.imageViewToByte(imageViewCar),
+                            MainActivity.imageViewToByte(imageViewCar),
                             position
                     );
                     dialog.dismiss();
@@ -216,16 +196,14 @@ public class CarListActivity extends AppCompatActivity {
         dialog.getWindow().setLayout(width, height);
         dialog.show();
 
-        final Car finalThiscar = thiscar;
-        final Car finalThiscar1 = thiscar;
         btnAddList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            AddToFirebase(finalThiscar1);
+            //TODO
             }
-        });
+            });
 
-
+        final Car finalThiscar = thiscar;
         btnShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -235,7 +213,7 @@ public class CarListActivity extends AppCompatActivity {
     }
 
     private void showDialogDelete(final int idCar){
-        final AlertDialog.Builder dialogDelete = new AlertDialog.Builder(CarListActivity.this);
+        final AlertDialog.Builder dialogDelete = new AlertDialog.Builder(YourListActivity.this);
 
         dialogDelete.setTitle("Warning:");
         dialogDelete.setMessage("Are you sure you want to delete this car?");
@@ -259,7 +237,6 @@ public class CarListActivity extends AppCompatActivity {
         });
         dialogDelete.show();
     }
-
 
 
 
@@ -315,54 +292,6 @@ public class CarListActivity extends AppCompatActivity {
     }
 
 
-    final Runnable updateRunnableCarList = new Runnable() {
-        @Override
-        public void run() {
-            Cursor cursor = LogInActivity.sqLiteHelper.getData("SELECT * FROM CARS");
-            list.clear();
-            while (cursor.moveToNext()) {
-                int id = cursor.getInt(0);
-                String name = cursor.getString(1);
-                String year = cursor.getString(2);
-                String description =cursor.getString(3);
-                String category= cursor.getString(4);
-                byte[] image = cursor.getBlob(5);
-                list.add(new Car(id,name, year, description,category, image));
-            }
-            adapter.notifyDataSetChanged();
-        }
-    };
-
-    private void AddToFirebase(final Car car) {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference();
-
-        carsDBreference = myRef.child("cars");
-        vel =new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
-                List<UserCar> cars = new ArrayList<>();
-                for(DataSnapshot entry: dataSnapshot.getChildren()){
-                    UserCar m = entry.getValue(UserCar.class);
-                    cars.add(m);
-                    Log.d("fetched cat CreateF: ", m.toString());
-                }
-                int id = cars.get(cars.size() - 1).getId() + 1;
-                UserCar userCar= new UserCar(id,s,car);
-                carsDBreference.child(String.valueOf(id)).setValue(userCar);
-            }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-        Query query =  carsDBreference.orderByChild("id");
-        query.addListenerForSingleValueEvent(vel);
-
-    }
     private void sendEmail(Car car){
 
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
@@ -374,7 +303,7 @@ public class CarListActivity extends AppCompatActivity {
             startActivity(Intent.createChooser(emailIntent, "Send mail..."));
             finish();
         } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(CarListActivity.this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(YourListActivity.this, "There is no email client installed.", Toast.LENGTH_SHORT).show();
         }
     }
 

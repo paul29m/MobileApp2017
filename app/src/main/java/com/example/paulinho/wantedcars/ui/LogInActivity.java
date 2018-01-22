@@ -26,6 +26,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 
 /**
@@ -36,6 +38,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
     private static final String TAG = LogInActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 420;
     public static SQLiteHelper sqLiteHelper;
+    public static FirebaseAuth mAuth;
 
     private GoogleApiClient mGoogleApiClient;
     private ProgressDialog mProgressDialog;
@@ -110,7 +113,7 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
             acct = result.getSignInAccount();
-
+            firebaseAuthWithGoogle();
             //Fetch values
             String personName = acct.getDisplayName();
             String personPhotoUrl =  acct.getPhotoUrl().toString();
@@ -159,6 +162,17 @@ public class LogInActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    private void firebaseAuthWithGoogle() {
+        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
+        mAuth = FirebaseAuth.getInstance();
+        mAuth.signInWithEmailAndPassword(acct.getEmail(), acct.getId());
+        String token = FirebaseInstanceId.getInstance().getToken();
+        Log.d(TAG,"Token: "+token);
+//
+//        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(),null);
+//        mAuth.signInWithCredential(credential);
+
+    }
     private void goToAdd() {
         Intent intent = new Intent(LogInActivity.this, MainActivity.class);
         startActivity(intent);
